@@ -4,7 +4,7 @@ projname = $(shell basename "$(shell pwd)")
 # "
 cc = clang++
 ld = clang++
-cflags = -Os -static
+ccflags = -Os -static
 ldflags = -Os -static
 libflags = -shared
 target = x86_64-pc-linux-gnu
@@ -26,11 +26,11 @@ run: build
 
 # Building
 build: 
-	$(cc) $(cflags) -c -I $(headerdir) -c $(sources)
+	$(cc) $(ccflags) -c -I $(headerdir) $(sources)
 	mv *.o $(objdir)/$(export_name)
 	$(ld) $(ldflags) $(objdir)$(export_name)/*.o -target $(target) -o $(bindir)$(export_name)/$(projname)
 build-lib:
-	$(cc) $(cflags) -c -I $(headerdir) -c $(sources)
+	$(cc) $(ccflags) -c -I $(headerdir) $(sources)
 	mv *.o $(objdir)$(export_name)
 	$(ld) $(ldflags) $(libflags) $(objdir)$(export_name)/*.o -target $(target) -o $(libbindir)$(export_name)/lib$(projname).so
 	cp $(headerdir)/*.h $(testsdir)/include
@@ -80,7 +80,7 @@ test-sources = $(wildcard $(testsdir)/$(test-name)/*.$(extension))
 test-args = -L "$(shell pwd)/$(libbindir)$(export_name)" -l $(projname)
 # Tests
 test-build:	
-	$(cc) -c $(cflags) -I $(testsdir)/$(test-name)/include -c $(test-sources)
+	$(cc) -c $(ccflags) -I $(testsdir)/$(test-name)/include $(test-sources)
 	mv *.o $(objdir)/tests$(export_name)
 	$(cc) $(test-args) $(objdir)/tests$(export_name)/*.o -target $(target) -o $(bindir)/tests$(export_name)/$(test-name)
 test-run: test-build
