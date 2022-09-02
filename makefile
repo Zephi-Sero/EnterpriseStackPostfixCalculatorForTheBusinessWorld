@@ -3,7 +3,9 @@
 projname = $(shell basename "$(shell pwd)")
 # "
 cc = clang++
-cflags = -Os -static
+ld = clang++
+ccflags = -Os -static
+ldflags = -Os -static
 libflags = -shared
 target = x86_64-pc-linux-gnu
 export_name = /$(cc)/$(target)
@@ -23,14 +25,14 @@ run: build
 	$(bindir)$(export_name)/$(projname)
 
 # Building
-build: 
-	$(cc) $(cflags) -c -I $(headerdir) -c $(sources)
+build: create-dirs
+	$(cc) $(ccflags) -c -I $(headerdir) $(sources)
 	mv *.o $(objdir)/$(export_name)
-	$(cc) $(cflags) $(objdir)$(export_name)/*.o -target $(target) -o $(bindir)$(export_name)/$(projname)
-build-lib:
-	$(cc) $(cflags) -c -I $(headerdir) -c $(sources)
+	$(ld) $(ldflags) $(objdir)$(export_name)/*.o -target $(target) -o $(bindir)$(export_name)/$(projname)
+build-lib: create-dirs
+	$(cc) $(ccflags) -c -I $(headerdir) $(sources)
 	mv *.o $(objdir)$(export_name)
-	$(cc) $(libflags) $(objdir)$(export_name)/*.o -target $(target) -o $(libbindir)$(export_name)/lib$(projname).so
+	$(ld) $(ldflags) $(libflags) $(objdir)$(export_name)/*.o -target $(target) -o $(libbindir)$(export_name)/lib$(projname).so
 	cp $(headerdir)/*.h $(testsdir)/include
 
 # Starting
@@ -53,22 +55,22 @@ remove-dirs:
 	rm -rf $(objdir)
 	rm -rf $(libbindir)
 create-dirs:
-	mkdir $(bindir)
-	mkdir $(bindir)/$(cc)
-	mkdir $(bindir)/$(export_name)
-	mkdir $(bindir)/tests
-	mkdir $(bindir)/tests/$(cc)
-	mkdir $(bindir)/tests/$(export_name)
-	mkdir $(libbindir)
-	mkdir $(libbindir)/$(cc)
-	mkdir $(libbindir)/$(export_name)
-	mkdir $(objdir)
-	mkdir $(objdir)/$(cc)
-	mkdir $(objdir)/$(export_name)
-	mkdir $(objdir)/tests
-	mkdir $(objdir)/tests/$(cc)
-	mkdir $(objdir)/tests/$(export_name)
-clean: remove-dirs create-dirs
+	mkdir -p $(bindir)
+	mkdir -p $(bindir)/$(cc)
+	mkdir -p $(bindir)/$(export_name)
+	mkdir -p $(bindir)/tests
+	mkdir -p $(bindir)/tests/$(cc)
+	mkdir -p $(bindir)/tests/$(export_name)
+	mkdir -p $(libbindir)
+	mkdir -p $(libbindir)/$(cc)
+	mkdir -p $(libbindir)/$(export_name)
+	mkdir -p $(objdir)
+	mkdir -p $(objdir)/$(cc)
+	mkdir -p $(objdir)/$(export_name)
+	mkdir -p $(objdir)/tests
+	mkdir -p $(objdir)/tests/$(cc)
+	mkdir -p $(objdir)/tests/$(export_name)
+clean: remove-dirs
 clean-build: clean build
 clean-build-lib: clean build-lib
 clean-run: clean run
@@ -77,8 +79,8 @@ test-name? = example-test
 test-sources = $(wildcard $(testsdir)/$(test-name)/*.$(extension))
 test-args = -L "$(shell pwd)/$(libbindir)$(export_name)" -l $(projname)
 # Tests
-test-build:	
-	$(cc) -c $(cflags) -I $(testsdir)/$(test-name)/include -c $(test-sources)
+test-build: create-dirs
+	$(cc) -c $(ccflags) -I $(testsdir)/$(test-name)/include $(test-sources)
 	mv *.o $(objdir)/tests$(export_name)
 	$(cc) $(test-args) $(objdir)/tests$(export_name)/*.o -target $(target) -o $(bindir)/tests$(export_name)/$(test-name)
 test-run: test-build
