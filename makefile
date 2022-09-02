@@ -3,7 +3,9 @@
 projname = $(shell basename "$(shell pwd)")
 # "
 cc = clang++
+ld = clang++
 cflags = -Os -static
+ldflags = -Os -static
 libflags = -shared
 target = x86_64-pc-linux-gnu
 export_name = /$(cc)/$(target)
@@ -26,11 +28,11 @@ run: build
 build: 
 	$(cc) $(cflags) -c -I $(headerdir) -c $(sources)
 	mv *.o $(objdir)/$(export_name)
-	$(cc) $(cflags) $(objdir)$(export_name)/*.o -target $(target) -o $(bindir)$(export_name)/$(projname)
+	$(ld) $(ldflags) $(objdir)$(export_name)/*.o -target $(target) -o $(bindir)$(export_name)/$(projname)
 build-lib:
 	$(cc) $(cflags) -c -I $(headerdir) -c $(sources)
 	mv *.o $(objdir)$(export_name)
-	$(cc) $(libflags) $(objdir)$(export_name)/*.o -target $(target) -o $(libbindir)$(export_name)/lib$(projname).so
+	$(ld) $(ldflags) $(libflags) $(objdir)$(export_name)/*.o -target $(target) -o $(libbindir)$(export_name)/lib$(projname).so
 	cp $(headerdir)/*.h $(testsdir)/include
 
 # Starting
